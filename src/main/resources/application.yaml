@@ -9,7 +9,8 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     database-platform: ${SPRING_JPA_DATABASE-PLATFORM}
-    ddl-auto: ${SPRING_JPA_HIBERNATE_DDL-AUTO}
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL-AUTO}
     properties:
       hibernate:
         jdbc:
