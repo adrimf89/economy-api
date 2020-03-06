@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SignUpUserDTO {
+public class FormUserDTO {
 
     @NotBlank
     @Size(max = 10)

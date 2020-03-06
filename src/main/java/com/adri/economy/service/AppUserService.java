@@ -2,52 +2,55 @@ package com.adri.economy.service;
 
 import com.adri.economy.dto.AppUserDTO;
 import com.adri.economy.dto.RoleDTO;
-import com.adri.economy.dto.SignUpUserDTO;
+import com.adri.economy.dto.FormUserDTO;
 import com.adri.economy.exception.ResourceAlreadyExistsException;
 import com.adri.economy.exception.ResourceNotFoundException;
 import com.adri.economy.model.AppUser;
 import com.adri.economy.model.Role;
 import com.adri.economy.repository.AppUserRepository;
+import com.adri.economy.util.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class AppUserService {
 
     private final AppUserRepository appUserRepository;
+    private final RoleService roleService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public AppUserDTO findByUsername(String username){
-        AppUser appUser = appUserRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found for this username "+username));
-
-        return mapToDTO(appUser);
+    public Optional<AppUserDTO> findByUsername(String username){
+        return appUserRepository.findByUsername(username)
+                .map(appUser -> Optional.of(Mapper.mapToAppUserDTO(appUser)))
+                .orElse(Optional.empty());
     }
 
     public Page<AppUserDTO> findAll(Pageable pageable){
-        Page<AppUser> page = appUserRepository.findAll(pageable);
-
-        return page.map(user -> mapToDTO(user));
+        return appUserRepository.findAll(pageable)
+                .map(user -> Mapper.mapToAppUserDTO(user));
     }
 
-    public AppUserDTO createUser(SignUpUserDTO signUpUser) {
+    public AppUserDTO createUser(FormUserDTO signUpUser) {
         if (appUserRepository.existsByUsername(signUpUser.getUserName())){
             throw new ResourceAlreadyExistsException("Username already exists: "+signUpUser.getUserName());
         }
 
-        //UUID roleId = UUID.fromString(signUpUser.getRole());
-        //Role userRole = roleDao.findById(roleId);
-        //if (!userRole.isPresent()){
-        //    throw new ResourceNotFoundException("Role: "+roleId);
-        //}
+        Role role = null;
+        Optional<RoleDTO> roleDTO = roleService.findByName(signUpUser.getRole());
+        if (roleDTO.isPresent()){
+            role = Mapper.mapToRole(roleDTO.get());
+        } else {
+            role = Mapper.mapToRole(roleService.createRole(signUpUser.getRole()));
+        }
 
         AppUser user = new AppUser();
         user.setId(UUID.randomUUID());
@@ -56,29 +59,32 @@ public class AppUserService {
         user.setFirstName(signUpUser.getFirstName());
         user.setLastName(signUpUser.getLastName());
         user.setCreationDate(new Date());
-        //user.setRoles(Arrays.asList(userRole.get()));
+        user.setRoles(Arrays.asList(role));
 
-        return mapToDTO(appUserRepository.save(user));
+        return Mapper.mapToAppUserDTO(appUserRepository.save(user));
     }
 
-    private AppUserDTO mapToDTO(AppUser appUser){
-        return AppUserDTO.builder()
-                .id(appUser.getId())
-                .username(appUser.getUsername())
-                .firstName(appUser.getFirstName())
-                .lastName(appUser.getLastName())
-                .creationDate(appUser.getCreationDate())
-                .deletedDate(appUser.getDeletedDate())
-                .roles(appUser.getRoles().stream()
-                            .map(role -> mapToRoleDTO(role))
-                            .collect(Collectors.toList()))
-                .build();
-    }
+    public AppUserDTO updateUser(UUID userId, FormUserDTO formUser) {
+        if (!appUserRepository.existsById(userId)){
+            throw new ResourceNotFoundException("User not found for id: "+userId);
+        }
 
-    private RoleDTO mapToRoleDTO(Role role){
-        return RoleDTO.builder()
-                .id(role.getId())
-                .role(role.getRole())
-                .build();
+        Role role = null;
+        Optional<RoleDTO> roleDTO = roleService.findByName(formUser.getRole());
+        if (roleDTO.isPresent()){
+            role = Mapper.mapToRole(roleDTO.get());
+        } else {
+            role = Mapper.mapToRole(roleService.createRole(formUser.getRole()));
+        }
+
+        AppUser appUser = appUserRepository.getOne(userId);
+
+        appUser.setUsername(formUser.getUserName());
+        appUser.setPassword(bCryptPasswordEncoder.encode(formUser.getPassword()));
+        appUser.setFirstName(formUser.getFirstName());
+        appUser.setLastName(formUser.getLastName());
+        appUser.setRoles(Arrays.asList(role));
+
+        return Mapper.mapToAppUserDTO(appUserRepository.save(appUser));
     }
 }
