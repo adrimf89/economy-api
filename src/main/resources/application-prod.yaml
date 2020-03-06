@@ -1,0 +1,18 @@
+logging:
+  level:
+    org.springframework: ERROR
+    com.adri.economy: DEBUG
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    database-platform: ${SPRING_JPA_DATABASE-PLATFORM}
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL-AUTO}
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true

@@ -1,0 +1,15 @@
+logging:
+  level:
+    org.springframework: ERROR
+    com.adri.economy: DEBUG
+spring:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    h2:
+      console:
+        enabled: true
