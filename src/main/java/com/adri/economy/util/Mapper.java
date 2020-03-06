@@ -28,10 +28,10 @@ public class Mapper {
     }
 
     public static Role mapToRole(RoleDTO roleDTO){
-        return Role.builder()
-                .id(roleDTO.getId())
-                .role(roleDTO.getRole())
-                .build();
+        Role role = new Role();
+        role.setId(roleDTO.getId());
+        role.setRole(roleDTO.getRole());
+        return role;
     }
 
     public static RoleDTO mapToRoleDTO(Role role){

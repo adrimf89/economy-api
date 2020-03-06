@@ -12,8 +12,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
-@Builder
 public class Role {
 
     @Id
