@@ -17,6 +17,7 @@ import java.net.URI;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
+
 @RestController
 @RequestMapping("/api/v1/users")
 @Slf4j
