@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -20,7 +19,7 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
 
-    public Optional<RoleDTO> findById(UUID id){
+    public Optional<RoleDTO> findById(long id){
         return roleRepository.findById(id)
                 .map(role -> Optional.of(Mapper.mapToRoleDTO(role)))
                 .orElse(Optional.empty());
@@ -43,7 +42,6 @@ public class RoleService {
         }
 
         Role role = new Role();
-        role.setId(UUID.randomUUID());
         role.setRole(roleName);
         role.setCreationDate(new Date());
 

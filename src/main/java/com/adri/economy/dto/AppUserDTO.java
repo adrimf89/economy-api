@@ -4,7 +4,6 @@ import lombok.*;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -13,7 +12,7 @@ import java.util.UUID;
 @Builder
 public class AppUserDTO {
 
-    private UUID id;
+    private long id;
     private String firstName;
     private String lastName;
     private String username;

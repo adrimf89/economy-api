@@ -15,7 +15,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -56,8 +55,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AppUserDTO> update(@PathVariable String id, @Valid @RequestBody FormUserDTO form){
-        AppUserDTO appUser = appUserService.updateUser(UUID.fromString(id), form);
+    public ResponseEntity<AppUserDTO> update(@PathVariable Long id, @Valid @RequestBody FormUserDTO form){
+        AppUserDTO appUser = appUserService.updateUser(id, form);
 
         return ResponseEntity.ok(appUser);
     }

@@ -1,8 +1,8 @@
 package com.adri.economy.service;
 
 import com.adri.economy.dto.AppUserDTO;
-import com.adri.economy.dto.RoleDTO;
 import com.adri.economy.dto.FormUserDTO;
+import com.adri.economy.dto.RoleDTO;
 import com.adri.economy.exception.ResourceAlreadyExistsException;
 import com.adri.economy.exception.ResourceNotFoundException;
 import com.adri.economy.model.AppUser;
@@ -14,11 +14,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -44,16 +44,11 @@ public class AppUserService {
             throw new ResourceAlreadyExistsException("Username already exists: "+signUpUser.getUserName());
         }
 
-        Role role = null;
-        Optional<RoleDTO> roleDTO = roleService.findByName(signUpUser.getRole());
-        if (roleDTO.isPresent()){
-            role = Mapper.mapToRole(roleDTO.get());
-        } else {
-            role = Mapper.mapToRole(roleService.createRole(signUpUser.getRole()));
-        }
+        RoleDTO roleDTO = roleService.findById(signUpUser.getRoleId())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found for id: "+signUpUser.getRoleId()));
+        Role role = Mapper.mapToRole(roleDTO);
 
         AppUser user = new AppUser();
-        user.setId(UUID.randomUUID());
         user.setUsername(signUpUser.getUserName());
         user.setPassword(bCryptPasswordEncoder.encode(signUpUser.getPassword()));
         user.setFirstName(signUpUser.getFirstName());
@@ -64,17 +59,9 @@ public class AppUserService {
         return Mapper.mapToAppUserDTO(appUserRepository.save(user));
     }
 
-    public AppUserDTO updateUser(UUID userId, FormUserDTO formUser) {
+    public AppUserDTO updateUser(Long userId, FormUserDTO formUser) {
         if (!appUserRepository.existsById(userId)){
             throw new ResourceNotFoundException("User not found for id: "+userId);
-        }
-
-        Role role = null;
-        Optional<RoleDTO> roleDTO = roleService.findByName(formUser.getRole());
-        if (roleDTO.isPresent()){
-            role = Mapper.mapToRole(roleDTO.get());
-        } else {
-            role = Mapper.mapToRole(roleService.createRole(formUser.getRole()));
         }
 
         AppUser appUser = appUserRepository.getOne(userId);
@@ -83,7 +70,22 @@ public class AppUserService {
         appUser.setPassword(bCryptPasswordEncoder.encode(formUser.getPassword()));
         appUser.setFirstName(formUser.getFirstName());
         appUser.setLastName(formUser.getLastName());
-        appUser.setRoles(Arrays.asList(role));
+
+        final long roleId = formUser.getRoleId();
+
+        RoleDTO roleDTO = roleService.findById(formUser.getRoleId())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found for id: "+formUser.getRoleId()));
+        Role role = Mapper.mapToRole(roleDTO);
+        if (CollectionUtils.isEmpty(appUser.getRoles())){
+            appUser.setRoles(Arrays.asList(role));
+        } else if (!appUser.getRoles()
+                .stream()
+                .filter(r -> r.getId() == roleId)
+                .findAny()
+                .isPresent()) {
+            appUser.getRoles().clear();
+            appUser.getRoles().add(role);
+        }
 
         return Mapper.mapToAppUserDTO(appUserRepository.save(appUser));
     }

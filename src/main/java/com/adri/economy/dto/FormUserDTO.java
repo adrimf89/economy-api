@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
@@ -32,6 +33,6 @@ public class FormUserDTO {
     @ApiModelProperty(notes = "Max size 10")
     private String password;
 
-    @NotBlank
-    private String role;
+    @NotNull
+    private long roleId;
 }

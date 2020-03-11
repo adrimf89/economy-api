@@ -1,12 +1,11 @@
 package com.adri.economy.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -15,7 +14,8 @@ import java.util.UUID;
 public class Role {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    private long id;
 
     @Column(unique = true, nullable = false)
     private String role;

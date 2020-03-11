@@ -7,7 +7,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -16,7 +15,8 @@ import java.util.UUID;
 public class AppUser {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    private long id;
 
     @Column(nullable = false)
     private String firstName;

@@ -10,6 +10,8 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
+    datasource:
+      platform: h2
     h2:
       console:
         enabled: true
