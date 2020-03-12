@@ -28,6 +28,12 @@ public class AppUserService {
     private final RoleService roleService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    public Optional<AppUserDTO> findById(long id){
+        return appUserRepository.findById(id)
+                .map(appUser -> Optional.of(Mapper.mapToAppUserDTO(appUser)))
+                .orElse(Optional.empty());
+    }
+
     public Optional<AppUserDTO> findByUsername(String username){
         return appUserRepository.findByUsername(username)
                 .map(appUser -> Optional.of(Mapper.mapToAppUserDTO(appUser)))
@@ -59,7 +65,7 @@ public class AppUserService {
         return Mapper.mapToAppUserDTO(appUserRepository.save(user));
     }
 
-    public AppUserDTO updateUser(Long userId, FormUserDTO formUser) {
+    public AppUserDTO updateUser(long userId, FormUserDTO formUser) {
         if (!appUserRepository.existsById(userId)){
             throw new ResourceNotFoundException("User not found for id: "+userId);
         }
@@ -86,6 +92,17 @@ public class AppUserService {
             appUser.getRoles().clear();
             appUser.getRoles().add(role);
         }
+
+        return Mapper.mapToAppUserDTO(appUserRepository.save(appUser));
+    }
+
+    public AppUserDTO deleteUser(long userId){
+        if (!appUserRepository.existsById(userId)){
+            throw new ResourceNotFoundException("User not found for id: "+userId);
+        }
+
+        AppUser appUser = appUserRepository.getOne(userId);
+        appUser.setDeletedDate(new Date());
 
         return Mapper.mapToAppUserDTO(appUserRepository.save(appUser));
     }

@@ -27,9 +27,9 @@ public class RoleController {
     private final RoleService roleService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoleDTO> findRole(@PathVariable Long roleId){
-        RoleDTO roleDTO = roleService.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found for this id "+roleId));
+    public ResponseEntity<RoleDTO> findRole(@PathVariable Long id){
+        RoleDTO roleDTO = roleService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found for this id "+id));
 
         return ResponseEntity.ok(roleDTO);
     }

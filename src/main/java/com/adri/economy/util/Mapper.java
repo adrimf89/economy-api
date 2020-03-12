@@ -1,7 +1,9 @@
 package com.adri.economy.util;
 
+import com.adri.economy.dto.AccountDTO;
 import com.adri.economy.dto.AppUserDTO;
 import com.adri.economy.dto.RoleDTO;
+import com.adri.economy.model.Account;
 import com.adri.economy.model.AppUser;
 import com.adri.economy.model.Role;
 import org.springframework.util.CollectionUtils;
@@ -38,6 +40,18 @@ public class Mapper {
         return RoleDTO.builder()
                 .id(role.getId())
                 .role(role.getRole())
+                .build();
+    }
+
+    public static AccountDTO mapToAccountDTO(Account account){
+        return AccountDTO.builder()
+                .id(account.getId())
+                .iban(account.getIban())
+                .currency(account.getCurrency())
+                .description(account.getDescription())
+                .creationDate(account.getCreationDate())
+                .deletedDate(account.getDeletedDate())
+                .owner(account.getOwner() == null ? null : mapToAppUserDTO(account.getOwner()))
                 .build();
     }
 }
