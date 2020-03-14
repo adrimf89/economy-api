@@ -18,4 +18,5 @@ public class AccountDTO {
     private Date creationDate;
     private Date deletedDate;
     private AppUserDTO owner;
+    private AccountBalanceDTO currentBalance;
 }

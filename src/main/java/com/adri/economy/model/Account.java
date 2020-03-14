@@ -34,6 +34,4 @@ public class Account {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private AppUser owner;
-
-    //BALANCE
 }

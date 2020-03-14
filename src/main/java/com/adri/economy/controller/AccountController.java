@@ -2,6 +2,7 @@ package com.adri.economy.controller;
 
 import com.adri.economy.dto.AccountDTO;
 import com.adri.economy.dto.FormAccountDTO;
+import com.adri.economy.dto.OperationDTO;
 import com.adri.economy.exception.ResourceNotFoundException;
 import com.adri.economy.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +43,7 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<AccountDTO> createRole(@Valid @RequestBody FormAccountDTO form){
+    public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody FormAccountDTO form){
         AccountDTO accountDTO = accountService.createAccount(form);
 
         URI location = ServletUriComponentsBuilder
@@ -51,5 +52,12 @@ public class AccountController {
                 .buildAndExpand(accountDTO.getId()).toUri();
 
         return ResponseEntity.created(location).build();
+    }
+
+    @GetMapping("/{id}/operations")
+    public ResponseEntity<PagedModel<OperationDTO>> findOperations(
+            @PathVariable Long id, Pageable pageable, PagedResourcesAssembler assembler){
+
+        return ResponseEntity.ok(assembler.toModel(accountService.findOperationByAccountId(id, pageable), linkTo(AccountController.class).withSelfRel()));
     }
 }
