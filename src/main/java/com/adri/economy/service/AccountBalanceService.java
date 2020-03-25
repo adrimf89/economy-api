@@ -1,5 +1,6 @@
 package com.adri.economy.service;
 
+import com.adri.economy.exception.ResourceNotFoundException;
 import com.adri.economy.model.Account;
 import com.adri.economy.model.AccountBalance;
 import com.adri.economy.model.Operation;
@@ -24,9 +25,19 @@ public class AccountBalanceService {
     private final AccountBalanceRepository  accountBalanceRepository;
 
     @Transactional
-    public void updateAccountBalance(Operation operation){
+    public void updateAccountBalance(long operationId){
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Operation not found for id: "+operationId));
+
+        Calendar startDate = Calendar.getInstance();
+        startDate.setTime(operation.getDate());
+        startDate.set(Calendar.HOUR_OF_DAY, 0);
+        startDate.set(Calendar.MINUTE, 0);
+        startDate.set(Calendar.SECOND, 0);
+        startDate.set(Calendar.MILLISECOND, 0);
+
         final Account account = operation.getAccount();
-        List<Operation> operations = operationRepository.findByAccountIdAndDateGreaterThanEqualOrderByDateAsc(account.getId(), operation.getDate());
+        List<Operation> operations = operationRepository.findByAccountIdAndDateGreaterThanEqualOrderByDateAsc(account.getId(), startDate.getTime());
 
         Map<Date, List<Operation>> operationsByDate = operations.stream()
                 .collect(groupingBy(op -> {

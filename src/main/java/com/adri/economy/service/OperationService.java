@@ -24,8 +24,6 @@ public class OperationService {
 
     private final OperationCategoryService operationCategoryService;
     private final AccountService accountService;
-    private final AccountBalanceService accountBalanceService;
-    private final AccountMonthStatisticsService accountMonthStatisticsService;
 
     public Optional<OperationDTO> findById(long id){
         return operationRepository.findById(id)
@@ -60,9 +58,8 @@ public class OperationService {
         operation.setCategory(operationCategory);
         operation = operationRepository.save(operation);
 
-        accountBalanceService.updateAccountBalance(operation);
-        accountMonthStatisticsService.updateAccountStatistics(operation);
-
         return Mapper.mapToOperationDTO(operation);
     }
+
+
 }

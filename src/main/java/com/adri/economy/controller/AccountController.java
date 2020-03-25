@@ -1,10 +1,12 @@
 package com.adri.economy.controller;
 
 import com.adri.economy.dto.AccountDTO;
+import com.adri.economy.dto.AppUserDTO;
 import com.adri.economy.dto.FormAccountDTO;
 import com.adri.economy.dto.OperationDTO;
 import com.adri.economy.exception.ResourceNotFoundException;
 import com.adri.economy.service.AccountService;
+import com.adri.economy.service.AppUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -23,9 +25,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RequestMapping("/api/v1/accounts")
 @Slf4j
 @RequiredArgsConstructor
-public class AccountController {
+public class AccountController extends AbstractController{
 
     private final AccountService accountService;
+    private final AppUserService appUserService;
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountDTO> findAccount(@PathVariable Long id){
@@ -44,6 +47,10 @@ public class AccountController {
 
     @PostMapping
     public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody FormAccountDTO form){
+        AppUserDTO appUserDTO = appUserService.findByUsername(this.getLoggedUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("Could not find logged user "));
+        form.setOwnerId(appUserDTO.getId());
+
         AccountDTO accountDTO = accountService.createAccount(form);
 
         URI location = ServletUriComponentsBuilder

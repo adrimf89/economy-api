@@ -16,7 +16,11 @@ spring:
       console:
         enabled: true
     jpa:
-      show-sql: true
+      show-sql: false
       properties:
         hibernate:
-          format_sql: true
+          format_sql: false
+rabbitmq:
+  queueName: economy.operations
+  exchangeName: economy.exchange
+  routingKey: economy.routingkey

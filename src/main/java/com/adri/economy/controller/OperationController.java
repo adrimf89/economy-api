@@ -3,6 +3,7 @@ package com.adri.economy.controller;
 import com.adri.economy.dto.FormOperationDTO;
 import com.adri.economy.dto.OperationDTO;
 import com.adri.economy.exception.ResourceNotFoundException;
+import com.adri.economy.service.AMQPService;
 import com.adri.economy.service.OperationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.net.URI;
 public class OperationController {
 
     private final OperationService operationService;
+    private final AMQPService amqpService;
 
     @GetMapping("/{id}")
     public ResponseEntity<OperationDTO> findOperation(@PathVariable Long id){
@@ -32,6 +34,8 @@ public class OperationController {
     @PostMapping
     public ResponseEntity<OperationDTO> createOperation(@Valid @RequestBody FormOperationDTO form){
         OperationDTO operationDTO = operationService.createOperation(form);
+
+        amqpService.sendOperationCreation(operationDTO.getId(), operationDTO.getAccountId());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()

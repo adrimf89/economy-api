@@ -1,8 +1,10 @@
 package com.adri.economy.service;
 
+import com.adri.economy.exception.ResourceNotFoundException;
 import com.adri.economy.model.AccountMonthStatistics;
 import com.adri.economy.model.Operation;
 import com.adri.economy.repository.AccountMonthStatisticsRepository;
+import com.adri.economy.repository.OperationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +16,14 @@ import java.util.Calendar;
 @Service
 public class AccountMonthStatisticsService {
 
+    private final OperationRepository operationRepository;
     private final AccountMonthStatisticsRepository accountMonthStatisticsRepository;
 
     @Transactional
-    public void updateAccountStatistics(Operation operation){
+    public void updateAccountStatistics(long operationId){
+        Operation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Operation not found for id: "+operationId));
+
         final long accountId = operation.getAccount().getId();
 
         Calendar cal = Calendar.getInstance();
