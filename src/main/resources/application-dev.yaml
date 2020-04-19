@@ -20,7 +20,8 @@ spring:
       properties:
         hibernate:
           format_sql: false
-rabbitmq:
-  queueName: economy.operations
-  exchangeName: economy.exchange
-  routingKey: economy.routingkey
+kafka:
+  bootstrapAddress: localhost:9092
+  topic:
+    operation: operation-topic
+    balance: bank-balance

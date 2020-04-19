@@ -1,16 +1,22 @@
 package com.adri.economy.service;
 
 import com.adri.economy.exception.ResourceNotFoundException;
+import com.adri.economy.kafka.model.BalanceKafka;
 import com.adri.economy.model.Account;
 import com.adri.economy.model.AccountBalance;
 import com.adri.economy.model.Operation;
 import com.adri.economy.repository.AccountBalanceRepository;
 import com.adri.economy.repository.OperationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -18,11 +24,50 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.groupingBy;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class AccountBalanceService {
 
     private final OperationRepository operationRepository;
     private final AccountBalanceRepository  accountBalanceRepository;
+
+    @KafkaListener(topics = "${kafka.topic.balance}", groupId = "test", containerFactory = "balanceKafkaListenerContainerFactory")
+    public void balanceListener(BalanceKafka balance, @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) Long key) {
+        log.debug("New balance for account {} - Count: {}, Balance: {}, Time: {}",
+                key,
+                balance.getCount(),
+                balance.getBalance(),
+                balance.getTime());
+        updateBalance(key, balance);
+    }
+
+    @Transactional
+    private void updateBalance(long accountId, BalanceKafka balanceKafka){
+        //Balance date
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(Date.from(Instant.parse(balanceKafka.getTime())));
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date balanceDate = cal.getTime();
+
+        Optional<AccountBalance> result = accountBalanceRepository.findByAccountIdAndDate(accountId, balanceDate);
+        if (result.isPresent()){
+            AccountBalance accountBalance = result.get();
+            accountBalance.setBalance(balanceKafka.getBalance());
+            accountBalanceRepository.save(accountBalance);
+        } else {
+            AccountBalance accountBalance = new AccountBalance();
+            accountBalance.setBalance(balanceKafka.getBalance());
+            accountBalance.setDate(balanceDate);
+
+            Account account = new Account();
+            account.setId(accountId);
+            accountBalance.setAccount(account);
+            accountBalanceRepository.save(accountBalance);
+        }
+    }
 
     @Transactional
     public void updateAccountBalance(long operationId){
