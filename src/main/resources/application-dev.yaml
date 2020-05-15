@@ -20,7 +20,11 @@ spring:
       properties:
         hibernate:
           format_sql: false
-rabbitmq:
-  queueName: economy.operations
-  exchangeName: economy.exchange
-  routingKey: economy.routingkey
+kafka:
+  bootstrapAddress: rocket-01.srvs.cloudkafka.com:9094, rocket-02.srvs.cloudkafka.com:9094, rocket-03.srvs.cloudkafka.com:9094
+  username: v5bn5q8c
+  password: jw3-bNa5Ybw8KNc35RereJY5NsHKVZZY
+  topic:
+    operation: v5bn5q8c-dev-operation-topic
+  group:
+    balance: balance-consumer-dev

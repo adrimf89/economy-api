@@ -27,36 +27,39 @@ $ heroku pg:info
 ```
 
 
-## RABBIT MQ
+## KAFKA
 
-### Run
+Within Kafka folder
 
-```
-$ docker run -d -p 15672:15672 -p 5672:5672 --name test-rabbit rabbitmq:3-management
-```
-
-### Stop
-```
-$ docker stop test-rabbit
-```
-
-### Delete
-```
-$ docker rm test-rabbit
-```
-
-http://localhost:15672/#
-
-## Docker commands
-
-View all containers
+### CREATE TOPICS
 
 ```
-$ docker ps -a 
+$ kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic operation-topic
 ```
 
-Delete containers
+```
+$ kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic bank-balance --config cleanup.policy=compact
+```
+
+### DELETE TOPICS
 
 ```
-$ docker rm $(docker ps -aq) 
+$ kafka-topics --delete --zookeeper localhost:2181 --topic operation-topic
+```
+
+```
+$ kafka-topics --delete --zookeeper localhost:2181 --topic bank-balance
+```
+
+### CONSUMERS
+
+```
+$ kafka-console-consumer --bootstrap-server localhost:9092 \
+    --topic operation-topic \
+    --from-beginning \
+    --formatter kafka.tools.DefaultMessageFormatter \
+    --property print.key=true \
+    --property print.value=true \
+    --property key.deserializer=org.apache.kafka.common.serialization.LongDeserializer \
+    --property value.deserializer=org.apache.kafka.common.serialization.StringDeserializer
 ```

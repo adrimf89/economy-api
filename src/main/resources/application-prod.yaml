@@ -16,3 +16,11 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
+kafka:
+  bootstrapAddress: ${KAFKA_ADDRESS}
+  username: ${KAFKA_USERNAME}
+  password: ${KAFKA_PASSWORD}
+  topic:
+    operation: ${KAFKA_USERNAME}-prod-operation-topic
+  group:
+    balance: balance-consumer-prod
