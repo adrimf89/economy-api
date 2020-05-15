@@ -1,11 +1,16 @@
 package com.adri.economy.service;
 
 import com.adri.economy.exception.ResourceNotFoundException;
+import com.adri.economy.kafka.model.OperationKafka;
 import com.adri.economy.model.AccountMonthStatistics;
 import com.adri.economy.model.Operation;
 import com.adri.economy.repository.AccountMonthStatisticsRepository;
 import com.adri.economy.repository.OperationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,11 +18,26 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class AccountMonthStatisticsService {
 
     private final OperationRepository operationRepository;
     private final AccountMonthStatisticsRepository accountMonthStatisticsRepository;
+
+    @KafkaListener(topics = "${kafka.topic.operation}", groupId = "${kafka.username}-${kafka.group.stats}", containerFactory = "statsKafkaListenerContainerFactory")
+    public void balanceListener(OperationKafka operation, @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) Long key) {
+        log.debug("Statistics calculation - Account: {}, operation id: {}, Time: {}",
+                key,
+                operation.getId(),
+                operation.getTimestamp());
+
+        try {
+            updateAccountStatistics(operation.getId());
+        } catch (Exception e) {
+            log.error("Error calculating statistics for operation {}", operation.getId(), e);
+        }
+    }
 
     @Transactional
     public void updateAccountStatistics(long operationId){
