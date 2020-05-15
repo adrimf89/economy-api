@@ -9,14 +9,12 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AccountDTO {
+public class OperationCategoryDTO {
 
     private long id;
-    private String iban;
+    private String name;
     private String description;
-    private String currency;
+    private String icon;
     private Date creationDate;
     private Date deletedDate;
-    private AppUserDTO owner;
-    private AccountBalanceDTO currentBalance;
 }

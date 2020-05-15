@@ -5,33 +5,30 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Account {
+@Table(uniqueConstraints={
+        @UniqueConstraint(columnNames = {"date", "account_id"})
+})
+public class AccountBalance {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false, unique = true)
-    private String iban;
+    @Column(nullable = false)
+    @Temporal(TemporalType.DATE)
+    private Date date;
 
     @Column(nullable = false)
-    private String description;
-
-    @Column(nullable = false)
-    private String currency;
-
-    @Column(nullable = false)
-    private Date creationDate;
-
-    private Date deletedDate;
+    private BigDecimal balance;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private AppUser owner;
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 }

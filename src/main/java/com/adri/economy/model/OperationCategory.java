@@ -11,27 +11,21 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Account {
+public class OperationCategory {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false, unique = true)
-    private String iban;
-
     @Column(nullable = false)
+    private String name;
+
     private String description;
 
-    @Column(nullable = false)
-    private String currency;
+    private String icon;
 
     @Column(nullable = false)
     private Date creationDate;
 
     private Date deletedDate;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private AppUser owner;
 }
