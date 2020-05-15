@@ -1,6 +1,6 @@
 package com.adri.economy.kafka;
 
-import com.adri.economy.kafka.model.BalanceKafka;
+import com.adri.economy.kafka.model.OperationKafka;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,17 +22,35 @@ public class KafkaConsumerConfig {
     @Value(value = "${kafka.bootstrapAddress}")
     private String bootstrapAddress;
 
-    public ConsumerFactory<Long, BalanceKafka> balanceConsumerFactory() {
+    @Value(value = "${kafka.username}")
+    private String kafkaUser;
+
+    @Value(value = "${kafka.password}")
+    private String kafkaPass;
+
+    @Value(value = "${kafka.group.balance}")
+    private String kafkaGroup;
+
+    public ConsumerFactory<Long, OperationKafka> balanceConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "balance-consumer");
-        //props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        return new DefaultKafkaConsumerFactory<>(props, new LongDeserializer(), new JsonDeserializer<>(BalanceKafka.class, false));
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaUser+"-"+kafkaGroup);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        //CloudKarafka config
+        String jaasTemplate = "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";";
+        String jaasCfg = String.format(jaasTemplate, kafkaUser, kafkaPass);
+
+        props.put("security.protocol", "SASL_SSL");
+        props.put("sasl.mechanism", "SCRAM-SHA-256");
+        props.put("sasl.jaas.config", jaasCfg);
+
+        return new DefaultKafkaConsumerFactory<>(props, new LongDeserializer(), new JsonDeserializer<>(OperationKafka.class, false));
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<Long, BalanceKafka> balanceKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<Long, BalanceKafka> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<Long, OperationKafka> balanceKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<Long, OperationKafka> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(balanceConsumerFactory());
         return factory;
     }

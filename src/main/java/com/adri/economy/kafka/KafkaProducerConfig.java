@@ -20,6 +20,12 @@ public class KafkaProducerConfig {
     @Value(value = "${kafka.bootstrapAddress}")
     private String bootstrapAddress;
 
+    @Value(value = "${kafka.username}")
+    private String kafkaUser;
+
+    @Value(value = "${kafka.password}")
+    private String kafkaPass;
+
     @Bean
     public ProducerFactory<Long, OperationKafka> operationProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -30,7 +36,19 @@ public class KafkaProducerConfig {
         configProps.put(ProducerConfig.RETRIES_CONFIG, "3");
         configProps.put(ProducerConfig.LINGER_MS_CONFIG, "1");
         // leverage idempotent producer
-        configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true"); // ensure we don't push duplicates
+        //Comment because error when connecting to CloudKarafka
+        //configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true"); // ensure we don't push duplicates
+
+        //CloudKarafka config
+        String jaasTemplate = "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";";
+        String jaasCfg = String.format(jaasTemplate, kafkaUser, kafkaPass);
+
+        System.out.println(jaasCfg);
+
+        configProps.put("security.protocol", "SASL_SSL");
+        configProps.put("sasl.mechanism", "SCRAM-SHA-256");
+        configProps.put("sasl.jaas.config", jaasCfg);
+
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
