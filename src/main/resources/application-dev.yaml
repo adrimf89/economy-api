@@ -28,3 +28,4 @@ kafka:
     operation: v5bn5q8c-dev-operation-topic
   group:
     balance: balance-consumer-dev
+    stats: stats-consumer-dev

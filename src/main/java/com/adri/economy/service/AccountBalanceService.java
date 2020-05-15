@@ -32,11 +32,16 @@ public class AccountBalanceService {
 
     @KafkaListener(topics = "${kafka.topic.operation}", groupId = "${kafka.username}-${kafka.group.balance}", containerFactory = "balanceKafkaListenerContainerFactory")
     public void balanceListener(OperationKafka operation, @Header(KafkaHeaders.RECEIVED_MESSAGE_KEY) Long key) {
-        log.debug("New operation received - Count: {}, operation id: {}, Time: {}",
+        log.debug("Balance calculation - Account: {}, operation id: {}, Time: {}",
                 key,
                 operation.getId(),
                 operation.getTimestamp());
-        updateAccountBalance(operation.getId());
+
+        try {
+            updateAccountBalance(operation.getId());
+        } catch (Exception e) {
+            log.error("Error calculating statistics for operation {}", operation.getId(), e);
+        }
     }
 
     @Transactional

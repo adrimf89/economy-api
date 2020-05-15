@@ -29,12 +29,32 @@ public class KafkaConsumerConfig {
     private String kafkaPass;
 
     @Value(value = "${kafka.group.balance}")
-    private String kafkaGroup;
+    private String kafkaBalanceGroup;
+
+    @Value(value = "${kafka.group.stats}")
+    private String kafkaStatsGroup;
 
     public ConsumerFactory<Long, OperationKafka> balanceConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaUser+"-"+kafkaGroup);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaUser+"-"+kafkaBalanceGroup);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        //CloudKarafka config
+        String jaasTemplate = "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";";
+        String jaasCfg = String.format(jaasTemplate, kafkaUser, kafkaPass);
+
+        props.put("security.protocol", "SASL_SSL");
+        props.put("sasl.mechanism", "SCRAM-SHA-256");
+        props.put("sasl.jaas.config", jaasCfg);
+
+        return new DefaultKafkaConsumerFactory<>(props, new LongDeserializer(), new JsonDeserializer<>(OperationKafka.class, false));
+    }
+
+    public ConsumerFactory<Long, OperationKafka> statsConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaUser+"-"+kafkaStatsGroup);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         //CloudKarafka config
@@ -52,6 +72,13 @@ public class KafkaConsumerConfig {
     public ConcurrentKafkaListenerContainerFactory<Long, OperationKafka> balanceKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<Long, OperationKafka> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(balanceConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<Long, OperationKafka> statsKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<Long, OperationKafka> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(statsConsumerFactory());
         return factory;
     }
 

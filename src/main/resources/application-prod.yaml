@@ -24,3 +24,4 @@ kafka:
     operation: ${KAFKA_USERNAME}-prod-operation-topic
   group:
     balance: balance-consumer-prod
+    stats: stats-consumer-prod
